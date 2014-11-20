@@ -1,0 +1,105 @@
+<html>
+<head>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script>
+        function findRadin(a, b, c) {
+            var ab = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+            var bc = Math.sqrt(Math.pow(b.x - c.x, 2) + Math.pow(b.y - c.y, 2));
+            var ac = Math.sqrt(Math.pow(c.x - a.x, 2) + Math.pow(c.y - a.y, 2));
+            return Math.acos((bc * bc + ab * ab - ac * ac) / (2 * bc * ab));
+        };
+        function findAngle(a, b, c) {
+            var radin = findRadin(a, b, c);
+            return angle = Math.round(radin / Math.PI * 180);
+        };
+        var angle = findAngle({ x: 4, y: 0 }, { x: 2, y: 2 }, { x: 0, y: 0 });
+        //var angle = findAngle({ x: 4, y: 0 }, { x: 2, y: 2 }, { x: 4, y: 2 });
+
+        // alert(angle);
+
+
+
+        var getRectangle = function ($e) {
+            var width = $e.css("width");
+            var height = $e.css("height");
+            var top = $e.css("top");
+            var left = $e.css("left");
+
+            var widthF = parseFloat(width);
+            var heightF = parseFloat(height);
+            var topF = parseFloat(top);
+            var leftF = parseFloat(left);
+            return { top: topF, left: leftF, width: widthF, height: heightF };
+        }
+
+        var getPageCoordinate = function (p, center) {
+            return { x: p.x + center.x, y: center.y - p.y };
+        };
+
+        var center = null;
+
+        var original = null;
+        var adjustRotatePosition = function ($e, degree) {
+            var rect = getRectangle($e);
+            var $r = $("#rotate");
+
+            var halfWdith = (rect.width / 2);
+            var halfHeight = rect.height / 2;
+            center = { x: rect.left + halfWdith, y: rect.top + halfHeight };
+            original = { x: center.x, y: center.y - halfHeight };
+            console.log(center);
+
+            var rotateAtCenter = { x: halfWdith + 20, y: halfHeight + 20 };
+            rotateOriginal = getPageCoordinate(rotateAtCenter, center);
+
+            $r.css({ left: rotateOriginal.x - 10 + "px", top: rotateOriginal.y - 10 + "px" });//减掉自己宽 高的一半，让原点可以对齐
+
+            var tanr = rect.height / rect.width;
+            var cosr = Math.sqrt(1 / (Math.pow(tanr, 2) + 1));
+
+            var radian = Math.acos(cosr);
+            var degree = radian / Math.PI * 180;
+            var r = Math.sqrt(Math.pow(rect.width / 2, 2) + Math.pow(rect.height / 2));
+            var r = r + 10;
+        };
+        $(function () {
+            adjustRotatePosition($("#box1", 0));
+            $(document).on("mousemove", function (e) {
+                $("#pageCoordinate").html(e.pageX + " " + e.pageY);
+            });
+
+            $(document).on("mousedown", function (e) {
+                var newP = { x: e.pageX, y: e.pageY };
+                var angle = findAngle(original, center, newP);
+
+                $("#angle1").html(angle);
+                if (newP.x < center.x) {
+                    angle = 360 - angle;
+                }
+                $("#angle2").html(angle);
+                $("#box1").css("transform", "rotate(" + angle + "deg)");
+            })
+
+        });
+    </script>
+</head>
+<body>
+    <div id="box1" style="width: 200px; height: 200px; position: absolute; left: 300px; top: 300px; background-color: slateblue">
+        <div style="height: 3px; width: 200px; position: absolute; left: 0px; top: 100px; background-color: orange"></div>
+        <div style="height: 200px; width: 3px; position: absolute; left: 100px; top: 0px; background-color: azure"></div>
+        hello world
+    </div>
+
+
+    <div id="rotate" style="width: 20px; height: 20px; left: 100px; top: 50px; position: absolute">
+        <div style="width: 20px; height: 20px; background-color: blue; position: absolute; top: 0; left: 0"></div>
+        <div style="position: absolute; top: -20px; left: -50px; width: 40px; height: 30px; background-color: yellow">0 °</div>
+        <div style="width: 20px; height: 20px; background-color: red;"></div>
+    </div>
+
+    <div id="pageCoordinate">00</div>
+    <div id="angle1">0</div>
+    <div id="angle2">0</div>
+</body>
+
+</html>
